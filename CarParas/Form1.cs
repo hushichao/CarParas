@@ -61,7 +61,7 @@ namespace CarParas
             //var del = new OpDelate( oprea.Test);
             //IAsyncResult ar = del.BeginInvoke( new AsyncCallback(CallbackMethod), del);
 
-        }
+        } 
 
 
         public delegate void OpDelate();
