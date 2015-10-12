@@ -151,10 +151,6 @@ namespace CarParasBll
 
                         var item = i;
                         var fileStr = AppDomain.CurrentDomain.BaseDirectory + "AutoData/" + item.ExtranetId + ".txt";
-                        if (item.ExtranetId == 16)
-                        {
-
-                        }
                         if (File.Exists(fileStr))
                         {
                             string valueStr = ReadFile(fileStr);
