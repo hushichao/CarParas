@@ -39,7 +39,7 @@ namespace CarParasBll
             using (var dbContex = new DmtMaxContext())
             {
                 IRepository<CarSeries> CarSeriesRepo = new Repo<CarSeries>(dbContex);
-                var results = await CarSeriesRepo.SearchFor(i=>true).OrderBy(i=>i.ExtranetId).
+                var results = await CarSeriesRepo.SearchFor(i => true).OrderBy(i => i.ExtranetId).
                               ToListAsync();
                 foreach (var i in results)
                 {
@@ -100,7 +100,7 @@ namespace CarParasBll
                     }
                 }
             }
-        //    return true;
+            //    return true;
         }
 
 
@@ -139,25 +139,34 @@ namespace CarParasBll
         /// <returns></returns>
         public async Task ImportOptionPartas()
         {
-
             using (var dbContex = new DmtMaxContext())
             {
                 IRepository<CarSeries> CarSeriesRepo = new Repo<CarSeries>(dbContex);
-
                 var results = await CarSeriesRepo.SearchFor(i => true).OrderBy(i => i.ExtranetId).
                     ToListAsync();
                 foreach (var i in results)
                 {
-                    var item = i;
-                    var fileStr = AppDomain.CurrentDomain.BaseDirectory + "AutoData/" + item.ExtranetId + ".txt";
-                    if (File.Exists(fileStr))
+                    try
                     {
-                        string valueStr = ReadFile(fileStr);
-                        var config = JsonConvert.DeserializeObject<B04>(valueStr);
-                        //   await UpdateCarNormarlParas(config.config);
-                        await UpdateCarSpecialParas(config.option);
-                        //  await UpdateCarColors(config.color, config.innerColor);
+
+                        var item = i;
+                        var fileStr = AppDomain.CurrentDomain.BaseDirectory + "AutoData/" + item.ExtranetId + ".txt";
+                        if (item.ExtranetId == 16)
+                        {
+
+                        }
+                        if (File.Exists(fileStr))
+                        {
+                            string valueStr = ReadFile(fileStr);
+                            var config = JsonConvert.DeserializeObject<B04>(valueStr);
+                            await UpdateCarSpecialParas(config.option);
+                        }
                     }
+                    catch (Exception ex)
+                    {
+
+                    }
+
 
                 }
             }
@@ -194,6 +203,11 @@ namespace CarParasBll
             }
         }
 
+        /// <summary>
+        /// 基本参数
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
         public async Task<bool> UpdateCarNormarlParas(string str)
         {
             using (var dbContex = new DmtMaxContext())
@@ -419,7 +433,7 @@ namespace CarParasBll
                     }
 
                     //底盘转向
-                    var listBottomIds = (from c in listBox select c.ProductExtranetId).ToList();
+                    var listBottomIds = (from c in listBottom select c.ProductExtranetId).ToList();
                     var listBottomexist =
                         await
                             CarBottomParasRepo.SearchFor(i => listBottomIds.Contains(i.ProductExtranetId)).ToListAsync();
@@ -479,442 +493,475 @@ namespace CarParasBll
 
         public async Task<bool> UpdateCarSpecialParas(string str)
         {
-
-            using (var dbContex = new DmtMaxContext())
+            try
             {
-                IRepository<CarSafeEquipParas> CarSafeEquipParasRepo = new Repo<CarSafeEquipParas>(dbContex);
-                IRepository<CarOperationParas> CarOperationParasRepo = new Repo<CarOperationParas>(dbContex);
-                IRepository<CarOutParas> CarOutParasRepo = new Repo<CarOutParas>(dbContex);
-                IRepository<CarInnerParas> CarInnerParasRepo = new Repo<CarInnerParas>(dbContex);
-                IRepository<CarChairParas> CarChairParasRepo = new Repo<CarChairParas>(dbContex);
-                IRepository<CarMediaParas> CarMediaParasRepo = new Repo<CarMediaParas>(dbContex);
-                IRepository<CarLightParas> CarLightParasRepo = new Repo<CarLightParas>(dbContex);
-                IRepository<CarGlassMirrorParas> CarGlassMirrorParasRepo = new Repo<CarGlassMirrorParas>(dbContex);
-                IRepository<CarAirConditionerParas> CarAirConditionerParasRepo =
-                    new Repo<CarAirConditionerParas>(dbContex);
-                IRepository<CarHighTechParas> CarHighTechParasRepo = new Repo<CarHighTechParas>(dbContex);
-                var listCarModelParas = new List<CarSpecialparaModels>();
-                //   string str = File.ReadAllText(@"D:\\特殊参数.txt", Encoding.UTF8);
-                var listEquip = new List<CarSafeEquipParas>();
-                var listOpera = new List<CarOperationParas>();
-                var listOut = new List<CarOutParas>();
-                var listInner = new List<CarInnerParas>();
-                var listChair = new List<CarChairParas>();
-                var listMedia = new List<CarMediaParas>();
-                var listLight = new List<CarLightParas>();
-                var listMirror = new List<CarGlassMirrorParas>();
-                var listAirCon = new List<CarAirConditionerParas>();
-                var listTech = new List<CarHighTechParas>();
-
-                try
+                using (var dbContex = new DmtMaxContext())
                 {
-                    #region  1转换成 类
+                    IRepository<CarSafeEquipParas> CarSafeEquipParasRepo = new Repo<CarSafeEquipParas>(dbContex);
+                    IRepository<CarOperationParas> CarOperationParasRepo = new Repo<CarOperationParas>(dbContex);
+                    IRepository<CarOutParas> CarOutParasRepo = new Repo<CarOutParas>(dbContex);
+                    IRepository<CarInnerParas> CarInnerParasRepo = new Repo<CarInnerParas>(dbContex);
+                    IRepository<CarChairParas> CarChairParasRepo = new Repo<CarChairParas>(dbContex);
+                    IRepository<CarMediaParas> CarMediaParasRepo = new Repo<CarMediaParas>(dbContex);
+                    IRepository<CarLightParas> CarLightParasRepo = new Repo<CarLightParas>(dbContex);
+                    IRepository<CarGlassMirrorParas> CarGlassMirrorParasRepo = new Repo<CarGlassMirrorParas>(dbContex);
+                    IRepository<CarAirConditionerParas> CarAirConditionerParasRepo =
+                        new Repo<CarAirConditionerParas>(dbContex);
+                    IRepository<CarHighTechParas> CarHighTechParasRepo = new Repo<CarHighTechParas>(dbContex);
+                    var listCarModelParas = new List<CarSpecialparaModels>();
+                    //   string str = File.ReadAllText(@"D:\\特殊参数.txt", Encoding.UTF8);
+                    var listEquip = new List<CarSafeEquipParas>();
+                    var listOpera = new List<CarOperationParas>();
+                    var listOut = new List<CarOutParas>();
+                    var listInner = new List<CarInnerParas>();
+                    var listChair = new List<CarChairParas>();
+                    var listMedia = new List<CarMediaParas>();
+                    var listLight = new List<CarLightParas>();
+                    var listMirror = new List<CarGlassMirrorParas>();
+                    var listAirCon = new List<CarAirConditionerParas>();
+                    var listTech = new List<CarHighTechParas>();
 
-                    var parasInfo = JsonConvert.DeserializeObject<JObject>(str)["result"];
-                    int carSerise;
-                    int.TryParse(((JValue)parasInfo["seriesid"]).ToString(CultureInfo.InvariantCulture), out carSerise);
-                    var listparas = (JArray)parasInfo["configtypeitems"];
-                    foreach (var basePara in listparas)
+                    try
                     {
-                        var carParaModels = new CarSpecialparaModels();
-                        var bigParaName = ((JValue)basePara["name"]).ToString(CultureInfo.InvariantCulture);
-                        carParaModels.BigParaName = bigParaName;
-                        var childPara = (JArray)basePara["configitems"];
-                        var dicModelParas = new Dictionary<string, List<CarSpecialProperty>>();
-                        carParaModels.DicModelParas = dicModelParas;
-                        foreach (var child in childPara)
+                        #region  1转换成 类
+
+                        var parasInfo = JsonConvert.DeserializeObject<JObject>(str)["result"];
+                        int carSerise;
+                        int.TryParse(((JValue)parasInfo["seriesid"]).ToString(CultureInfo.InvariantCulture),
+                            out carSerise);
+                        var listparas = (JArray)parasInfo["configtypeitems"];
+                        foreach (var basePara in listparas)
                         {
-                            var childParaName = ((JValue)child["name"]).ToString(CultureInfo.InvariantCulture);
-                            var valueitems = (JArray)child["valueitems"];
-                            foreach (var item in valueitems)
+                            var carParaModels = new CarSpecialparaModels();
+                            var bigParaName = ((JValue)basePara["name"]).ToString(CultureInfo.InvariantCulture);
+                            carParaModels.BigParaName = bigParaName;
+                            var childPara = (JArray)basePara["configitems"];
+                            var dicModelParas = new Dictionary<string, List<CarSpecialProperty>>();
+                            carParaModels.DicModelParas = dicModelParas;
+                            foreach (var child in childPara)
                             {
-                                var extandId = ((JValue)item["specid"]).ToString(CultureInfo.InvariantCulture);
-                                var value = ((JValue)item["value"]).ToString(CultureInfo.InvariantCulture);
-                                if (!dicModelParas.ContainsKey(extandId))
-                                    dicModelParas.Add(extandId, new List<CarSpecialProperty>());
-                                dicModelParas[extandId].Add(new CarSpecialProperty
+                                var childParaName = ((JValue)child["name"]).ToString(CultureInfo.InvariantCulture);
+                                var valueitems = (JArray)child["valueitems"];
+                                foreach (var item in valueitems)
                                 {
-                                    PropertyName = childParaName,
-                                    PropertyValues = new SpecialProperty
+                                    var extandId = ((JValue)item["specid"]).ToString(CultureInfo.InvariantCulture);
+                                    var value = ((JValue)item["value"]).ToString(CultureInfo.InvariantCulture);
+                                    if (!dicModelParas.ContainsKey(extandId))
+                                        dicModelParas.Add(extandId, new List<CarSpecialProperty>());
+                                    var newPropertys = new SpecialProperty();
+                                    try
                                     {
-                                        Value = ((JValue)item["value"]).ToString(CultureInfo.InvariantCulture),
-                                        Price = ((JValue)item["price"]).ToString(CultureInfo.InvariantCulture)
+                                        newPropertys.Value =
+                                            ((JValue)item["value"]).ToString(CultureInfo.InvariantCulture);
+                                        newPropertys.Price =
+                                            ((JValue)item["price"]).ToString(CultureInfo.InvariantCulture);
                                     }
-                                });
+                                    catch
+                                    {
+                                        try
+                                        {
+                                            var listPrices = JsonConvert.SerializeObject(item["price"]);
+                                            newPropertys.Price = listPrices;
+                                        }
+                                        catch
+                                        {
+                                            newPropertys.Price = "null";
+                                        }
+                                    }
+                                    dicModelParas[extandId].Add(new CarSpecialProperty
+                                    {
+                                        PropertyName = childParaName,
+                                        PropertyValues = newPropertys
+                                    });
+                                }
                             }
+                            listCarModelParas.Add(carParaModels);
                         }
-                        listCarModelParas.Add(carParaModels);
-                    }
 
-                    #endregion
+                        #endregion
 
-                    #region 2生成数据
+                        #region 2生成数据
 
-                    foreach (var model in listCarModelParas)
-                    {
-                        if (model.BigParaName.Equals("安全装备"))
+                        foreach (var model in listCarModelParas)
                         {
-                            foreach (var paras in model.DicModelParas)
+                            if (model.BigParaName.Equals("安全装备"))
                             {
-                                var basepara = new CarSafeEquipParas();
-                                int id;
-                                int.TryParse(paras.Key, out id);
-                                basepara.ProductExtranetId = id;
-                                ExchangeSpecModelValue(ref basepara, paras.Value);
-                                basepara.SeriesId = carSerise;
-                                listEquip.Add(basepara);
+                                foreach (var paras in model.DicModelParas)
+                                {
+                                    var basepara = new CarSafeEquipParas();
+                                    int id;
+                                    int.TryParse(paras.Key, out id);
+                                    basepara.ProductExtranetId = id;
+                                    ExchangeSpecModelValue(ref basepara, paras.Value);
+                                    basepara.SeriesId = carSerise;
+                                    listEquip.Add(basepara);
+                                }
                             }
-                        }
-                        else if (model.BigParaName.Equals("操控配置"))
-                        {
-                            foreach (var paras in model.DicModelParas)
+                            else if (model.BigParaName.Equals("操控配置"))
                             {
-                                var basepara = new CarOperationParas();
-                                int id;
-                                int.TryParse(paras.Key, out id);
-                                basepara.ProductExtranetId = id;
-                                ExchangeSpecModelValue(ref basepara, paras.Value);
-                                basepara.SeriesId = carSerise;
-                                listOpera.Add(basepara);
+                                foreach (var paras in model.DicModelParas)
+                                {
+                                    var basepara = new CarOperationParas();
+                                    int id;
+                                    int.TryParse(paras.Key, out id);
+                                    basepara.ProductExtranetId = id;
+                                    ExchangeSpecModelValue(ref basepara, paras.Value);
+                                    basepara.SeriesId = carSerise;
+                                    listOpera.Add(basepara);
+                                }
                             }
-                        }
 
-                        else if (model.BigParaName.Equals("外部配置"))
-                        {
-                            foreach (var paras in model.DicModelParas)
+                            else if (model.BigParaName.Equals("外部配置"))
                             {
-                                var basepara = new CarOutParas();
-                                int id;
-                                int.TryParse(paras.Key, out id);
-                                basepara.ProductExtranetId = id;
-                                ExchangeSpecModelValue(ref basepara, paras.Value);
-                                basepara.SeriesId = carSerise;
-                                listOut.Add(basepara);
+                                foreach (var paras in model.DicModelParas)
+                                {
+                                    var basepara = new CarOutParas();
+                                    int id;
+                                    int.TryParse(paras.Key, out id);
+                                    basepara.ProductExtranetId = id;
+                                    ExchangeSpecModelValue(ref basepara, paras.Value);
+                                    basepara.SeriesId = carSerise;
+                                    listOut.Add(basepara);
+                                }
                             }
-                        }
-                        else if (model.BigParaName.Equals("内部配置"))
-                        {
-                            foreach (var paras in model.DicModelParas)
+                            else if (model.BigParaName.Equals("内部配置"))
                             {
-                                var basepara = new CarInnerParas();
-                                int id;
-                                int.TryParse(paras.Key, out id);
-                                basepara.ProductExtranetId = id;
-                                ExchangeSpecModelValue(ref basepara, paras.Value);
-                                basepara.SeriesId = carSerise;
-                                listInner.Add(basepara);
+                                foreach (var paras in model.DicModelParas)
+                                {
+                                    var basepara = new CarInnerParas();
+                                    int id;
+                                    int.TryParse(paras.Key, out id);
+                                    basepara.ProductExtranetId = id;
+                                    ExchangeSpecModelValue(ref basepara, paras.Value);
+                                    basepara.SeriesId = carSerise;
+                                    listInner.Add(basepara);
+                                }
                             }
-                        }
-                        else if (model.BigParaName.Equals("座椅配置"))
-                        {
-                            foreach (var paras in model.DicModelParas)
+                            else if (model.BigParaName.Equals("座椅配置"))
                             {
-                                var basepara = new CarChairParas();
-                                int id;
-                                int.TryParse(paras.Key, out id);
-                                basepara.ProductExtranetId = id;
-                                ExchangeSpecModelValue(ref basepara, paras.Value);
-                                basepara.SeriesId = carSerise;
-                                listChair.Add(basepara);
+                                foreach (var paras in model.DicModelParas)
+                                {
+                                    var basepara = new CarChairParas();
+                                    int id;
+                                    int.TryParse(paras.Key, out id);
+                                    basepara.ProductExtranetId = id;
+                                    ExchangeSpecModelValue(ref basepara, paras.Value);
+                                    basepara.SeriesId = carSerise;
+                                    listChair.Add(basepara);
+                                }
                             }
-                        }
-                        else if (model.BigParaName.Equals("多媒体配置"))
-                        {
-                            foreach (var paras in model.DicModelParas)
+                            else if (model.BigParaName.Equals("多媒体配置"))
                             {
-                                var basepara = new CarMediaParas();
-                                int id;
-                                int.TryParse(paras.Key, out id);
-                                basepara.ProductExtranetId = id;
-                                ExchangeSpecModelValue(ref basepara, paras.Value);
-                                basepara.SeriesId = carSerise;
-                                listMedia.Add(basepara);
+                                foreach (var paras in model.DicModelParas)
+                                {
+                                    var basepara = new CarMediaParas();
+                                    int id;
+                                    int.TryParse(paras.Key, out id);
+                                    basepara.ProductExtranetId = id;
+                                    ExchangeSpecModelValue(ref basepara, paras.Value);
+                                    basepara.SeriesId = carSerise;
+                                    listMedia.Add(basepara);
+                                }
                             }
-                        }
-                        else if (model.BigParaName.Equals("灯光配置"))
-                        {
-                            foreach (var paras in model.DicModelParas)
+                            else if (model.BigParaName.Equals("灯光配置"))
                             {
-                                var basepara = new CarLightParas();
-                                int id;
-                                int.TryParse(paras.Key, out id);
-                                basepara.ProductExtranetId = id;
-                                ExchangeSpecModelValue(ref basepara, paras.Value);
-                                basepara.SeriesId = carSerise;
-                                listLight.Add(basepara);
+                                foreach (var paras in model.DicModelParas)
+                                {
+                                    var basepara = new CarLightParas();
+                                    int id;
+                                    int.TryParse(paras.Key, out id);
+                                    basepara.ProductExtranetId = id;
+                                    ExchangeSpecModelValue(ref basepara, paras.Value);
+                                    basepara.SeriesId = carSerise;
+                                    listLight.Add(basepara);
+                                }
                             }
-                        }
-                        else if (model.BigParaName.Equals("玻璃/后视镜"))
-                        {
-                            foreach (var paras in model.DicModelParas)
+                            else if (model.BigParaName.Equals("玻璃/后视镜"))
                             {
-                                var basepara = new CarGlassMirrorParas();
-                                int id;
-                                int.TryParse(paras.Key, out id);
-                                basepara.ProductExtranetId = id;
-                                ExchangeSpecModelValue(ref basepara, paras.Value);
-                                basepara.SeriesId = carSerise;
-                                listMirror.Add(basepara);
+                                foreach (var paras in model.DicModelParas)
+                                {
+                                    var basepara = new CarGlassMirrorParas();
+                                    int id;
+                                    int.TryParse(paras.Key, out id);
+                                    basepara.ProductExtranetId = id;
+                                    ExchangeSpecModelValue(ref basepara, paras.Value);
+                                    basepara.SeriesId = carSerise;
+                                    listMirror.Add(basepara);
+                                }
                             }
-                        }
-                        else if (model.BigParaName.Equals("空调/冰箱"))
-                        {
-                            foreach (var paras in model.DicModelParas)
+                            else if (model.BigParaName.Equals("空调/冰箱"))
                             {
-                                var basepara = new CarAirConditionerParas();
-                                int id;
-                                int.TryParse(paras.Key, out id);
-                                basepara.ProductExtranetId = id;
-                                ExchangeSpecModelValue(ref basepara, paras.Value);
-                                basepara.SeriesId = carSerise;
-                                listAirCon.Add(basepara);
+                                foreach (var paras in model.DicModelParas)
+                                {
+                                    var basepara = new CarAirConditionerParas();
+                                    int id;
+                                    int.TryParse(paras.Key, out id);
+                                    basepara.ProductExtranetId = id;
+                                    ExchangeSpecModelValue(ref basepara, paras.Value);
+                                    basepara.SeriesId = carSerise;
+                                    listAirCon.Add(basepara);
+                                }
                             }
-                        }
-                        else if (model.BigParaName.Equals("高科技配置"))
-                        {
-                            foreach (var paras in model.DicModelParas)
+                            else if (model.BigParaName.Equals("高科技配置"))
                             {
-                                var basepara = new CarHighTechParas();
-                                int id;
-                                int.TryParse(paras.Key, out id);
-                                basepara.ProductExtranetId = id;
-                                ExchangeSpecModelValue(ref basepara, paras.Value);
-                                basepara.SeriesId = carSerise;
-                                listTech.Add(basepara);
+                                foreach (var paras in model.DicModelParas)
+                                {
+                                    var basepara = new CarHighTechParas();
+                                    int id;
+                                    int.TryParse(paras.Key, out id);
+                                    basepara.ProductExtranetId = id;
+                                    ExchangeSpecModelValue(ref basepara, paras.Value);
+                                    basepara.SeriesId = carSerise;
+                                    listTech.Add(basepara);
+                                }
+                            }
+
+
+
+                        }
+
+                        #endregion
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+
+
+                    #region 保存数据
+
+                    using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                    {
+                        #region 处理数据 不存在 新增 存在 则修改
+
+                        //1安全装备
+                        var listequipIds = (from c in listEquip select c.ProductExtranetId).ToList();
+                        var listequipexist =
+                            await
+                                CarSafeEquipParasRepo.SearchFor(i => listequipIds.Contains(i.ProductExtranetId))
+                                    .ToListAsync();
+                        foreach (var exist in listequipexist)
+                        {
+                            var exist1 = exist;
+                            var newBase =
+                                (from p in listEquip where p.ProductExtranetId == exist1.ProductExtranetId select p)
+                                    .FirstOrDefault();
+                            if (newBase != null)
+                            {
+                                ChangeValues(ref exist1, newBase);
+                                listEquip.Remove(newBase);
+                            }
+                        }
+
+                        //2操控配置
+                        var listoperaIds = (from c in listOpera select c.ProductExtranetId).ToList();
+                        var listoperapexist =
+                            await
+                                CarOperationParasRepo.SearchFor(i => listoperaIds.Contains(i.ProductExtranetId))
+                                    .ToListAsync();
+                        foreach (var exist in listoperapexist)
+                        {
+                            var exist1 = exist;
+                            var newBase =
+                                (from p in listOpera where p.ProductExtranetId == exist1.ProductExtranetId select p)
+                                    .FirstOrDefault();
+                            if (newBase != null)
+                            {
+                                ChangeValues(ref exist1, newBase);
+                                listOpera.Remove(newBase);
                             }
                         }
 
 
-
-                    }
-
-                    #endregion
-                }
-                catch
-                {
-                    return false;
-                }
-
-
-                #region 保存数据
-
-                using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-                {
-                    #region 处理数据 不存在 新增 存在 则修改
-
-                    //1安全装备
-                    var listequipIds = (from c in listEquip select c.ProductExtranetId).ToList();
-                    var listequipexist =
-                        await
-                            CarSafeEquipParasRepo.SearchFor(i => listequipIds.Contains(i.ProductExtranetId))
-                                .ToListAsync();
-                    foreach (var exist in listequipexist)
-                    {
-                        var exist1 = exist;
-                        var newBase =
-                            (from p in listEquip where p.ProductExtranetId == exist1.ProductExtranetId select p)
-                                .FirstOrDefault();
-                        if (newBase != null)
+                        //3外部配置
+                        var listoutIds = (from c in listOut select c.ProductExtranetId).ToList();
+                        var listoutexist =
+                            await CarOutParasRepo.SearchFor(i => listoutIds.Contains(i.ProductExtranetId)).ToListAsync();
+                        foreach (var exist in listoutexist)
                         {
-                            ChangeValues(ref exist1, newBase);
-                            listEquip.Remove(newBase);
+                            var exist1 = exist;
+                            var newBase =
+                                (from p in listOut where p.ProductExtranetId == exist1.ProductExtranetId select p)
+                                    .FirstOrDefault();
+                            if (newBase != null)
+                            {
+                                ChangeValues(ref exist1, newBase);
+                                listOut.Remove(newBase);
+                            }
                         }
-                    }
 
-                    //2操控配置
-                    var listoperaIds = (from c in listOpera select c.ProductExtranetId).ToList();
-                    var listoperapexist =
-                        await
-                            CarOperationParasRepo.SearchFor(i => listoperaIds.Contains(i.ProductExtranetId))
-                                .ToListAsync();
-                    foreach (var exist in listoperapexist)
-                    {
-                        var exist1 = exist;
-                        var newBase =
-                            (from p in listOpera where p.ProductExtranetId == exist1.ProductExtranetId select p)
-                                .FirstOrDefault();
-                        if (newBase != null)
+                        //4内部部配置
+                        var listinnerIds = (from c in listInner select c.ProductExtranetId).ToList();
+                        var listinnerexist =
+                            await
+                                CarInnerParasRepo.SearchFor(i => listinnerIds.Contains(i.ProductExtranetId))
+                                    .ToListAsync();
+                        foreach (var exist in listinnerexist)
                         {
-                            ChangeValues(ref exist1, newBase);
-                            listOpera.Remove(newBase);
+                            var exist1 = exist;
+                            var newBase =
+                                (from p in listInner where p.ProductExtranetId == exist1.ProductExtranetId select p)
+                                    .FirstOrDefault();
+                            if (newBase != null)
+                            {
+                                ChangeValues(ref exist1, newBase);
+                                listInner.Remove(newBase);
+                            }
                         }
-                    }
 
-
-                    //3外部配置
-                    var listoutIds = (from c in listOut select c.ProductExtranetId).ToList();
-                    var listoutexist =
-                        await CarOutParasRepo.SearchFor(i => listoutIds.Contains(i.ProductExtranetId)).ToListAsync();
-                    foreach (var exist in listoutexist)
-                    {
-                        var exist1 = exist;
-                        var newBase =
-                            (from p in listOut where p.ProductExtranetId == exist1.ProductExtranetId select p)
-                                .FirstOrDefault();
-                        if (newBase != null)
+                        //5座椅配置
+                        var listchairIds = (from c in listChair select c.ProductExtranetId).ToList();
+                        var listchairexist =
+                            await
+                                CarChairParasRepo.SearchFor(i => listchairIds.Contains(i.ProductExtranetId))
+                                    .ToListAsync();
+                        foreach (var exist in listchairexist)
                         {
-                            ChangeValues(ref exist1, newBase);
-                            listOut.Remove(newBase);
+                            var exist1 = exist;
+                            var newBase =
+                                (from p in listChair where p.ProductExtranetId == exist1.ProductExtranetId select p)
+                                    .FirstOrDefault();
+                            if (newBase != null)
+                            {
+                                ChangeValues(ref exist1, newBase);
+                                listChair.Remove(newBase);
+                            }
                         }
-                    }
 
-                    //4内部部配置
-                    var listinnerIds = (from c in listInner select c.ProductExtranetId).ToList();
-                    var listinnerexist =
-                        await CarInnerParasRepo.SearchFor(i => listinnerIds.Contains(i.ProductExtranetId)).ToListAsync();
-                    foreach (var exist in listinnerexist)
-                    {
-                        var exist1 = exist;
-                        var newBase =
-                            (from p in listInner where p.ProductExtranetId == exist1.ProductExtranetId select p)
-                                .FirstOrDefault();
-                        if (newBase != null)
+                        //6多媒体配置
+                        var listmediaIds = (from c in listMedia select c.ProductExtranetId).ToList();
+                        var listmediaexist =
+                            await
+                                CarMediaParasRepo.SearchFor(i => listmediaIds.Contains(i.ProductExtranetId))
+                                    .ToListAsync();
+                        foreach (var exist in listmediaexist)
                         {
-                            ChangeValues(ref exist1, newBase);
-                            listInner.Remove(newBase);
+                            var exist1 = exist;
+                            var newBase =
+                                (from p in listMedia where p.ProductExtranetId == exist1.ProductExtranetId select p)
+                                    .FirstOrDefault();
+                            if (newBase != null)
+                            {
+                                ChangeValues(ref exist1, newBase);
+                                listMedia.Remove(newBase);
+                            }
                         }
-                    }
 
-                    //5座椅配置
-                    var listchairIds = (from c in listChair select c.ProductExtranetId).ToList();
-                    var listchairexist =
-                        await CarChairParasRepo.SearchFor(i => listchairIds.Contains(i.ProductExtranetId)).ToListAsync();
-                    foreach (var exist in listchairexist)
-                    {
-                        var exist1 = exist;
-                        var newBase =
-                            (from p in listChair where p.ProductExtranetId == exist1.ProductExtranetId select p)
-                                .FirstOrDefault();
-                        if (newBase != null)
+                        //7灯光配置
+                        var listlightIds = (from c in listLight select c.ProductExtranetId).ToList();
+                        var listlightexist =
+                            await
+                                CarLightParasRepo.SearchFor(i => listlightIds.Contains(i.ProductExtranetId))
+                                    .ToListAsync();
+                        foreach (var exist in listlightexist)
                         {
-                            ChangeValues(ref exist1, newBase);
-                            listChair.Remove(newBase);
+                            var exist1 = exist;
+                            var newBase =
+                                (from p in listLight where p.ProductExtranetId == exist1.ProductExtranetId select p)
+                                    .FirstOrDefault();
+                            if (newBase != null)
+                            {
+                                ChangeValues(ref exist1, newBase);
+                                listLight.Remove(newBase);
+                            }
                         }
-                    }
 
-                    //6多媒体配置
-                    var listmediaIds = (from c in listMedia select c.ProductExtranetId).ToList();
-                    var listmediaexist =
-                        await CarMediaParasRepo.SearchFor(i => listmediaIds.Contains(i.ProductExtranetId)).ToListAsync();
-                    foreach (var exist in listmediaexist)
-                    {
-                        var exist1 = exist;
-                        var newBase =
-                            (from p in listMedia where p.ProductExtranetId == exist1.ProductExtranetId select p)
-                                .FirstOrDefault();
-                        if (newBase != null)
+                        //8玻璃/后视镜
+                        var listmirrorIds = (from c in listMirror select c.ProductExtranetId).ToList();
+                        var listmirrorexist =
+                            await
+                                CarGlassMirrorParasRepo.SearchFor(i => listmirrorIds.Contains(i.ProductExtranetId))
+                                    .ToListAsync();
+                        foreach (var exist in listmirrorexist)
                         {
-                            ChangeValues(ref exist1, newBase);
-                            listMedia.Remove(newBase);
+                            var exist1 = exist;
+                            var newBase =
+                                (from p in listMirror where p.ProductExtranetId == exist1.ProductExtranetId select p)
+                                    .FirstOrDefault();
+                            if (newBase != null)
+                            {
+                                ChangeValues(ref exist1, newBase);
+                                listMirror.Remove(newBase);
+                            }
                         }
-                    }
 
-                    //7灯光配置
-                    var listlightIds = (from c in listLight select c.ProductExtranetId).ToList();
-                    var listlightexist =
-                        await CarLightParasRepo.SearchFor(i => listlightIds.Contains(i.ProductExtranetId)).ToListAsync();
-                    foreach (var exist in listlightexist)
-                    {
-                        var exist1 = exist;
-                        var newBase =
-                            (from p in listLight where p.ProductExtranetId == exist1.ProductExtranetId select p)
-                                .FirstOrDefault();
-                        if (newBase != null)
+                        //9空调/冰箱
+                        var listairIds = (from c in listAirCon select c.ProductExtranetId).ToList();
+                        var listairexist =
+                            await
+                                CarAirConditionerParasRepo.SearchFor(i => listairIds.Contains(i.ProductExtranetId))
+                                    .ToListAsync();
+                        foreach (var exist in listairexist)
                         {
-                            ChangeValues(ref exist1, newBase);
-                            listLight.Remove(newBase);
+                            var exist1 = exist;
+                            var newBase =
+                                (from p in listAirCon where p.ProductExtranetId == exist1.ProductExtranetId select p)
+                                    .FirstOrDefault();
+                            if (newBase != null)
+                            {
+                                ChangeValues(ref exist1, newBase);
+                                listAirCon.Remove(newBase);
+                            }
                         }
-                    }
 
-                    //8玻璃/后视镜
-                    var listmirrorIds = (from c in listMirror select c.ProductExtranetId).ToList();
-                    var listmirrorexist =
-                        await
-                            CarGlassMirrorParasRepo.SearchFor(i => listmirrorIds.Contains(i.ProductExtranetId))
-                                .ToListAsync();
-                    foreach (var exist in listmirrorexist)
-                    {
-                        var exist1 = exist;
-                        var newBase =
-                            (from p in listMirror where p.ProductExtranetId == exist1.ProductExtranetId select p)
-                                .FirstOrDefault();
-                        if (newBase != null)
+                        //10高科技配置
+                        var listtecIds = (from c in listTech select c.ProductExtranetId).ToList();
+                        var listtecexist =
+                            await
+                                CarHighTechParasRepo.SearchFor(i => listtecIds.Contains(i.ProductExtranetId))
+                                    .ToListAsync();
+                        foreach (var exist in listtecexist)
                         {
-                            ChangeValues(ref exist1, newBase);
-                            listMirror.Remove(newBase);
+                            var exist1 = exist;
+                            var newBase =
+                                (from p in listTech where p.ProductExtranetId == exist1.ProductExtranetId select p)
+                                    .FirstOrDefault();
+                            if (newBase != null)
+                            {
+                                ChangeValues(ref exist1, newBase);
+                                listTech.Remove(newBase);
+                            }
                         }
+
+                        #endregion
+
+                        #region 处理数据  添加到数据库
+
+                        await CarHighTechParasRepo.EditRangeAsync(listtecexist);
+                        await CarHighTechParasRepo.InsertRangeAsync(listTech);
+                        await CarAirConditionerParasRepo.EditRangeAsync(listairexist);
+                        await CarAirConditionerParasRepo.InsertRangeAsync(listAirCon);
+                        await CarGlassMirrorParasRepo.EditRangeAsync(listmirrorexist);
+                        await CarGlassMirrorParasRepo.InsertRangeAsync(listMirror);
+                        await CarLightParasRepo.EditRangeAsync(listlightexist);
+                        await CarLightParasRepo.InsertRangeAsync(listLight);
+                        await CarMediaParasRepo.EditRangeAsync(listmediaexist);
+                        await CarMediaParasRepo.InsertRangeAsync(listMedia);
+                        await CarChairParasRepo.EditRangeAsync(listchairexist);
+                        await CarChairParasRepo.InsertRangeAsync(listChair);
+                        await CarInnerParasRepo.EditRangeAsync(listinnerexist);
+                        await CarInnerParasRepo.InsertRangeAsync(listInner);
+                        await CarOutParasRepo.EditRangeAsync(listoutexist);
+                        await CarOutParasRepo.InsertRangeAsync(listOut);
+                        await CarOperationParasRepo.EditRangeAsync(listoperapexist);
+                        await CarOperationParasRepo.InsertRangeAsync(listOpera);
+                        await CarSafeEquipParasRepo.EditRangeAsync(listequipexist);
+                        await CarSafeEquipParasRepo.InsertRangeAsync(listEquip);
+
+                        #endregion
+
+                        scope.Complete();
                     }
-
-                    //9空调/冰箱
-                    var listairIds = (from c in listAirCon select c.ProductExtranetId).ToList();
-                    var listairexist =
-                        await
-                            CarAirConditionerParasRepo.SearchFor(i => listairIds.Contains(i.ProductExtranetId))
-                                .ToListAsync();
-                    foreach (var exist in listairexist)
-                    {
-                        var exist1 = exist;
-                        var newBase =
-                            (from p in listAirCon where p.ProductExtranetId == exist1.ProductExtranetId select p)
-                                .FirstOrDefault();
-                        if (newBase != null)
-                        {
-                            ChangeValues(ref exist1, newBase);
-                            listAirCon.Remove(newBase);
-                        }
-                    }
-
-                    //10高科技配置
-                    var listtecIds = (from c in listTech select c.ProductExtranetId).ToList();
-                    var listtecexist =
-                        await
-                            CarHighTechParasRepo.SearchFor(i => listtecIds.Contains(i.ProductExtranetId)).ToListAsync();
-                    foreach (var exist in listtecexist)
-                    {
-                        var exist1 = exist;
-                        var newBase =
-                            (from p in listTech where p.ProductExtranetId == exist1.ProductExtranetId select p)
-                                .FirstOrDefault();
-                        if (newBase != null)
-                        {
-                            ChangeValues(ref exist1, newBase);
-                            listTech.Remove(newBase);
-                        }
-                    }
-
-                    #endregion
-
-                    #region 处理数据  添加到数据库
-
-                    await CarHighTechParasRepo.EditRangeAsync(listtecexist);
-                    await CarHighTechParasRepo.InsertRangeAsync(listTech);
-                    await CarAirConditionerParasRepo.EditRangeAsync(listairexist);
-                    await CarAirConditionerParasRepo.InsertRangeAsync(listAirCon);
-                    await CarGlassMirrorParasRepo.EditRangeAsync(listmirrorexist);
-                    await CarGlassMirrorParasRepo.InsertRangeAsync(listMirror);
-                    await CarLightParasRepo.EditRangeAsync(listlightexist);
-                    await CarLightParasRepo.InsertRangeAsync(listLight);
-                    await CarMediaParasRepo.EditRangeAsync(listmediaexist);
-                    await CarMediaParasRepo.InsertRangeAsync(listMedia);
-                    await CarChairParasRepo.EditRangeAsync(listchairexist);
-                    await CarChairParasRepo.InsertRangeAsync(listChair);
-                    await CarInnerParasRepo.EditRangeAsync(listinnerexist);
-                    await CarInnerParasRepo.InsertRangeAsync(listInner);
-                    await CarOutParasRepo.EditRangeAsync(listoutexist);
-                    await CarOutParasRepo.InsertRangeAsync(listOut);
-                    await CarOperationParasRepo.EditRangeAsync(listoperapexist);
-                    await CarOperationParasRepo.InsertRangeAsync(listOpera);
-                    await CarSafeEquipParasRepo.EditRangeAsync(listequipexist);
-                    await CarSafeEquipParasRepo.InsertRangeAsync(listEquip);
-
-                    #endregion
-
-                    scope.Complete();
                 }
             }
+            catch (Exception ex)
+            {
 
-                #endregion
+            }
+
+                    #endregion
             return true;
+
 
         }
 

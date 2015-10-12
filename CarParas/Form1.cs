@@ -25,29 +25,26 @@ namespace CarParas
         private async void button1_Click(object sender, EventArgs e)
         {
             button1.Enabled = false;
-            var oprea1 = new CarParasOperation();
-            var task1 = new Task(async () =>
-            {
-                await oprea1.ImportBasePartas();
-            });
-            task1.Start();
+           var oprea1 = new CarParasOperation();
+           var task1 = new Task(async () =>
+           {
+               await oprea1.ImportBasePartas();
+           });
+           task1.Start();
 
-            var task2 = new Task(async () =>
-            {
-                await oprea1.ImportOptionPartas();
-            });
-            task2.Start();
+           var task2 = new Task(async () =>
+           {
+               await oprea1.ImportOptionPartas();
+           });
+           task2.Start();
 
-            var task3 = new Task(async () =>
-            {
-                await oprea1.ImportColorPartas();
-            });
-            task3.Start();
+           var task3 = new Task(async () =>
+           {
+               await oprea1.ImportColorPartas();
+           });
+           task3.Start();
 
-            //var task = new Task(oprea1.Test);
-            //task.Start();
-            //Task.WaitAll(task);
-            //MessageBox.Show("导入参数完成");
+      
         }
 
         private async void button2_Click(object sender, EventArgs e)
