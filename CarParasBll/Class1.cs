@@ -1073,7 +1073,7 @@ namespace CarParasBll
 
 
 
-     
+
         public async Task<bool> ImportAutoImgs(int takeCount)
         {
             if (takeCount > 60)
@@ -1098,7 +1098,7 @@ namespace CarParasBll
                             var round = 0;
                             var url = string.Format("http://car.autohome.com.cn/pic/series/{0}-1.html",
                                 i.ExtranetId);
-                            restart:
+                        restart:
                             if (round >= 2)
                                 continue;
                             round++;
@@ -1159,6 +1159,79 @@ namespace CarParasBll
             return true;
 
         }
+
+
+        public async Task<bool> ImportCarBrands()
+        {
+            var httpClient = new HttpClient();
+
+            var responseMessage =
+               await httpClient.GetAsync(
+                    "http://car.autohome.com.cn/javascript/NewSpecCompare.js"
+          );
+
+            //GetAsync
+            var r = await responseMessage.Content.ReadAsByteArrayAsync();
+            var branStr = Encoding.Default.GetString(r).Replace("var listCompare$100=", "").TrimEnd(';');
+
+            using (var dbContex = new DmtMaxContext())
+            {
+                IRepository<CarBrand> CarBrandRepo = new Repo<CarBrand>(dbContex);
+                IRepository<CarBrandCategory> CarBrandCategoryRepo = new Repo<CarBrandCategory>(dbContex);
+                IRepository<CarSeries> CarSeriesRepo = new Repo<CarSeries>(dbContex);
+
+
+                var listAllInfo = JsonConvert.DeserializeObject<List<BrandsModel>>(branStr);
+                var listBrand = new List<CarBrand>();
+                var listBrandCategory = new List<CarBrandCategory>();
+                var listCarSeries = new List<CarSeries>();
+                foreach (var brand in listAllInfo)
+                {
+                    var carBrand = new CarBrand
+                    {
+                        Name = brand.N,
+                        ExtranetId = brand.I,
+                        FirstLetter = brand.L
+                    };
+                    foreach (var category in brand.List)
+                    {
+                        var brandCategory = new CarBrandCategory
+                        {
+                            BrandId = brand.I,
+                            ExtranetId = category.I,
+                            Name = category.N
+                        };
+                        listBrandCategory.Add(brandCategory);
+
+                        foreach (var serie in category.List)
+                        {
+                            var carSerie = new CarSeries
+                            {
+                                BrandCategoryId = category.I,
+                                ExtranetId = serie.I,
+                                Name = serie.N
+                            };
+                            listCarSeries.Add(carSerie);
+
+                        }
+                    }
+                    listBrand.Add(carBrand);
+                }
+                using (var ts = new TransactionScope())
+                {
+                    await CarBrandRepo.DeleteRangeAsync(i => true);
+                    await CarBrandCategoryRepo.DeleteRangeAsync(i => true);
+                    await CarSeriesRepo.DeleteRangeAsync(i => true);
+                    await CarBrandRepo.InsertRangeAsync(listBrand);
+                    await CarBrandCategoryRepo.InsertRangeAsync(listBrandCategory);
+                    await CarSeriesRepo.InsertRangeAsync(listCarSeries);
+                    ts.Complete();
+                }
+            }
+
+            return true;
+        }
+
 
 
 
