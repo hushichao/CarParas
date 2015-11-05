@@ -69,6 +69,23 @@ namespace CarParas
        
         }
 
+        private void button3_Click(object sender, EventArgs e)
+        {
+            int count;
+            int.TryParse(textBox1.Text, out count);
+            if (count <= 0)
+            {
+                MessageBox.Show("图片数量不对");
+                return;
+            }
+            var oprea1 = new CarParasOperation();
+            var task1 = new Task(async () =>
+            {
+                await oprea1.ImportAutoImgs(count);
+            });
+            task1.Start();
+        }
+
 
     }
 }

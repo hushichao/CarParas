@@ -5,6 +5,7 @@ using System.Data.Entity;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -15,6 +16,7 @@ using System.Threading.Tasks;
 using DmtMax.Infrastructure.Context;
 using DmtMax.Infrastructure.Model;
 using DmtMax.Infrastructure.Repo;
+using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
@@ -1068,8 +1070,119 @@ namespace CarParasBll
         }
 
 
+
+
+
+     
+        public async Task<bool> ImportAutoImgs(int takeCount)
+        {
+            if (takeCount > 60)
+                takeCount = 60;
+            if (takeCount <= 0)
+                takeCount = 10;
+            using (var dbContex = new DmtMaxContext())
+            {
+                IRepository<CarSeries> CarSeriesRepo = new Repo<CarSeries>(dbContex);
+                IRepository<CarSeriesImages> CarSeriesImagesRepo = new Repo<CarSeriesImages>(dbContex);
+                var series = await CarSeriesRepo.GetAll().ToListAsync();
+                foreach (var item in series)
+                {
+                    var i = item;
+
+                    try
+                    {
+                        if (await CarSeriesImagesRepo.CountAysnc(p => p.SeriesId == i.ExtranetId) > 0)
+                            continue;
+                        using (var client = new HttpClient())
+                        {
+                            var round = 0;
+                            var url = string.Format("http://car.autohome.com.cn/pic/series/{0}-1.html",
+                                i.ExtranetId);
+                            restart:
+                            if (round >= 2)
+                                continue;
+                            round++;
+                            var httpMessage =
+                                await client.GetAsync(url);
+                            var html = await httpMessage.Content.ReadAsStringAsync();
+                            var htmlDoc = new HtmlDocument();
+                            htmlDoc.LoadHtml(html);
+                            var nodes =
+                                htmlDoc.DocumentNode.SelectNodes(
+                                    "//*[starts-with(@class,'uibox-con')]/ul/li/a/img");
+
+
+                            if (nodes == null || nodes.Count == 0) //如果没有车系图片尝试抓取停售车型
+                            {
+                                url = string.Format("http://car.autohome.com.cn/pic/series-t/{0}-1.html",
+                                    i.ExtranetId);
+                                goto restart;
+                            }
+
+                            var imgs = nodes.Take(takeCount).ToList();
+
+                            var result = new List<string>();
+                            var httpClient = new HttpClient();
+                            var multipartFormDataContent = new MultipartFormDataContent();
+                            foreach (var img in imgs)
+                            {
+                                var request =
+                                    (HttpWebRequest)
+                                        WebRequest.Create(img.Attributes["src"].Value.Replace("/t_", "/u_"));
+                                request.Method = "GET";
+                                var response = request.GetResponse();
+                                var streamConent = new StreamContent(response.GetResponseStream());
+                                multipartFormDataContent.Add(streamConent);
+
+                            }
+                            var responseMessage =
+                                httpClient.PostAsync(
+                                    "http://oss.meitc.com/api/Upload/dmtmax/auto/series_" + i.ExtranetId,
+                                    multipartFormDataContent).Result;
+                            var r = await responseMessage.Content.ReadAsStringAsync();
+                            result = JsonConvert.DeserializeObject<List<string>>(r);
+                            await CarSeriesImagesRepo.InsertAsync(new CarSeriesImages
+                            {
+                                ListImages = result,
+                                SeriesId = i.ExtranetId
+                            });
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        CreateFile(AppDomain.CurrentDomain.BaseDirectory + "/log.txt", i.ExtranetId.ToString() + "\r\n",
+                            true);
+                    }
+                }
+            }
+            return true;
+
+        }
+
+
+
         #region private Method
 
+
+
+        /// <summary>
+        /// 写入文件(新建文件或者追加内容)
+        /// </summary>
+        /// <param name="fileName">文件名</param>
+        /// <param name="content">文件内容</param>
+        /// <param name="append">是否为追加文件，为false时创建或覆盖原有文件</param>
+        public static void CreateFile(string fileName, string content, bool append = false)
+        {
+            FileStream fs = new FileStream(fileName, (append) ? FileMode.Append : FileMode.Create);
+            //获得字节数组
+            byte[] data = System.Text.Encoding.Default.GetBytes(content);
+            //开始写入
+            fs.Write(data, 0, data.Length);
+            //清空缓冲区、关闭流
+            fs.Flush();
+            fs.Close();
+        }
         /// <summary>
         /// 写入文件(新建文件或者追加内容)
         /// </summary>
